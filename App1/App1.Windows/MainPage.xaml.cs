@@ -26,6 +26,7 @@ namespace Swooper
         private TextBox _tb;
         private StorageFile _file;
         private Vk _vk;
+        
         private readonly ObservableDictionary _defaultViewModel = new ObservableDictionary();
         public ObservableDictionary DefaultViewModel
         {
@@ -40,6 +41,7 @@ namespace Swooper
             NavigationHelper = new NavigationHelper(this);
             NavigationHelper.LoadState += navigationHelper_LoadState;
             NavigationHelper.SaveState += navigationHelper_SaveState;
+            save.IsEnabled = false;
         }
         private void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
@@ -114,6 +116,7 @@ namespace Swooper
             tbB.Visibility = Visibility.Visible;
             tbS.Visibility = Visibility.Visible;
             tbS.Margin = new Thickness(border.Width - 50, 0, 0, 0);
+            save.IsEnabled = true;
         }
         private double getWidthForImage(double widthh, int type)
         {
@@ -155,14 +158,22 @@ namespace Swooper
                         BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, stream);
                     var bytes = pixels.ToArray();
                     encoder.SetPixelData(BitmapPixelFormat.Bgra8,
-                                         BitmapAlphaMode.Ignore,
-                                         (uint)canvas.Width, (uint)canvas.Height,
-                                         96, 96, bytes);
+                        BitmapAlphaMode.Ignore,
+                        (uint) canvas.Width, (uint) canvas.Height,
+                        96, 96, bytes);
 
                     await encoder.FlushAsync();
                 }
+                _file = file;
             }
-            _file = file;
+            else
+            {
+                FontSlider.Visibility = Visibility.Visible;
+                FontSliderSmall.Visibility = Visibility.Visible;
+                tbB.Visibility = Visibility.Visible;
+                tbS.Visibility = Visibility.Visible;
+            }
+
         }
 
         private async void vk_click(object sender, RoutedEventArgs e)
@@ -224,17 +235,20 @@ namespace Swooper
                     await _vk.PhotoTo(friend.Id, ReadFile(_file).Result, _file, pressed.Content != null && pressed.Content.ToString() == "Отправить на стену" ? 1 : 2, myText.Text);
                 }
                 var dialogSuccess = new MessageDialog("Успешно отправлено!");
-                dialogSuccess.ShowAsync();
+                await dialogSuccess.ShowAsync();
+                FontSlider.Visibility = Visibility.Visible;
+                FontSliderSmall.Visibility = Visibility.Visible;
+                tbB.Visibility = Visibility.Visible;
+                tbS.Visibility = Visibility.Visible;
+
             }
         }
 
         private void click_item(object sender, ItemClickEventArgs e)
         {
-            if (_file != null)
-            {
-                LoginDialog.Title = "Отправка изображения для " + e.ClickedItem;
-                LoginDialog.IsOpen = true;
-            }
+            if (_file == null) return;
+            LoginDialog.Title = "Отправка изображения для " + e.ClickedItem;
+            LoginDialog.IsOpen = true;
         }
 
         private void ValueChanged_sm(object sender, RangeBaseValueChangedEventArgs e)
