@@ -307,7 +307,7 @@ namespace Swooper
             var sp = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
-                Background = new SolidColorBrush(Colors.Aquamarine),
+                Background = new SolidColorBrush(Colors.Gray),
                 Width = 300,
                 Height = 50
             };
