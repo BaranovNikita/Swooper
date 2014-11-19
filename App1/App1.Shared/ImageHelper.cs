@@ -41,7 +41,7 @@ namespace Swooper
         {
             var scale = 0;
             var width = widthh;
-            while ((width / 1.1) > (type == 1 ? Window.Current.Bounds.Height - 300 : 600))
+            while ((width / 1.1) > (type == 1 ? Window.Current.Bounds.Height - 300 : Window.Current.Bounds.Width - 600))
             {
                 scale++;
                 width = width / 1.1;

@@ -107,7 +107,7 @@ namespace Swooper
             MyFriends.Margin = new Thickness(Window.Current.Bounds.Width - 300, 10, 0, 0);
             VisibleElements(true); 
             TitleRight.Margin = new Thickness(Border.Width - 50, 0, 0, 0);
-            }
+        }
 
 
         private async void save_button_click(object sender, RoutedEventArgs e)
