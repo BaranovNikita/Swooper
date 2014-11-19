@@ -7,14 +7,12 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
 using System;
 using System.Threading.Tasks;
-using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.UI.Popups;
 using Windows.Storage.Streams;
 using Swooper.Common;
@@ -26,7 +24,7 @@ namespace Swooper
         private TextBox _tb;
         private StorageFile _file;
         private Vk _vk;
-        
+        private ImageHelper helper = new ImageHelper();
         private readonly ObservableDictionary _defaultViewModel = new ObservableDictionary();
         public ObservableDictionary DefaultViewModel
         {
@@ -86,8 +84,8 @@ namespace Swooper
             var image = new BitmapImage();
             image.SetSource(stream);
             var scale = Math.Ceiling(image.PixelWidth > image.PixelHeight
-                ? getWidthForImage(image.PixelWidth, 0)
-                : getWidthForImage(image.PixelHeight, 1));
+                ? helper.getWidthForImage(image.PixelWidth, 0)
+                : helper.getWidthForImage(image.PixelHeight, 1));
             myPicture.Width = Math.Ceiling(image.PixelWidth / scale);
             myPicture.Height = Math.Ceiling(image.PixelHeight / scale);
             myPicture.Source = image;
@@ -110,7 +108,6 @@ namespace Swooper
             FontSliderSmall.Margin = new Thickness(border.Width - 50, 40, 0, 0);
             FontSliderSmall.Height = border.Height - 50;
             myFriends.Margin = new Thickness(Window.Current.Bounds.Width - 300, 10, 0, 0);
-
             FontSlider.Visibility = Visibility.Visible;
             FontSliderSmall.Visibility = Visibility.Visible;
             tbB.Visibility = Visibility.Visible;
@@ -118,63 +115,14 @@ namespace Swooper
             tbS.Margin = new Thickness(border.Width - 50, 0, 0, 0);
             save.IsEnabled = true;
         }
-        private double getWidthForImage(double widthh, int type)
-        {
-            var scale = 0;
-            var width = widthh;
-            while ((width / 1.1) > (type == 1 ? Window.Current.Bounds.Height - 300 : 600))
-            {
-                scale++;
-                width = width / 1.1;
-            }
-            width /= 1.1;
-            return scale == 0 ? 1 : widthh / width;
-
-        }
+        
 
         private async void save_button_click(object sender, RoutedEventArgs e)
         {
-            await CreateSaveBitmapAsync(border);
-        }
-
-        private async Task CreateSaveBitmapAsync(FrameworkElement canvas)
-        {
-            FontSlider.Visibility = Visibility.Collapsed;
-            FontSliderSmall.Visibility = Visibility.Collapsed;
-            tbB.Visibility = Visibility.Collapsed;
-            tbS.Visibility = Visibility.Collapsed;
-            var renderTargetBitmap = new RenderTargetBitmap();
-            await renderTargetBitmap.RenderAsync(canvas);
-
-            var picker = new FileSavePicker();
-            picker.FileTypeChoices.Add("JPEG Image", new[] { ".jpg" });
-            var file = await picker.PickSaveFileAsync();
-            if (file != null)
-            {
-                var pixels = await renderTargetBitmap.GetPixelsAsync();
-                using (var stream = await file.OpenAsync(FileAccessMode.ReadWrite))
-                {
-                    var encoder = await
-                        BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, stream);
-                    var bytes = pixels.ToArray();
-                    encoder.SetPixelData(BitmapPixelFormat.Bgra8,
-                        BitmapAlphaMode.Ignore,
-                        (uint) canvas.Width, (uint) canvas.Height,
-                        96, 96, bytes);
-
-                    await encoder.FlushAsync();
-                }
-                _file = file;
-            }
-            else
-            {
-                FontSlider.Visibility = Visibility.Visible;
-                FontSliderSmall.Visibility = Visibility.Visible;
-                tbB.Visibility = Visibility.Visible;
-                tbS.Visibility = Visibility.Visible;
-            }
-
-        }
+            VisibleElements(false);
+            await helper.CreateSaveBitmapAsync(border);
+            VisibleElements(true);
+        }        
 
         private async void vk_click(object sender, RoutedEventArgs e)
         {
@@ -202,20 +150,24 @@ namespace Swooper
         }
 
 
-        public async Task<byte[]> ReadFile(StorageFile file)
+        
+        public void VisibleElements(bool flag)
         {
-            byte[] fileBytes;
-            using (var stream = await file.OpenReadAsync())
+            if (!flag)
             {
-                fileBytes = new byte[stream.Size];
-                using (var reader = new DataReader(stream))
-                {
-                    await reader.LoadAsync((uint)stream.Size);
-                    reader.ReadBytes(fileBytes);
-                }
+                FontSlider.Visibility = Visibility.Collapsed;
+                FontSliderSmall.Visibility = Visibility.Collapsed;
+                tbB.Visibility = Visibility.Collapsed;
+                tbS.Visibility = Visibility.Collapsed;
             }
-
-            return fileBytes;
+            else
+            {
+                FontSlider.Visibility = Visibility.Visible;
+                FontSliderSmall.Visibility = Visibility.Visible;
+                tbB.Visibility = Visibility.Visible;
+                tbS.Visibility = Visibility.Visible;
+         
+            }
         }
 
         private async void ToMessage(object sender, RoutedEventArgs e)
@@ -228,19 +180,16 @@ namespace Swooper
             }
             else
             {
-                await CreateSaveBitmapAsync(border);
+                VisibleElements(false);
+                await helper.CreateSaveBitmapAsync(border);
                 LoginDialog.IsOpen = false;
                 foreach (var friend in _vk.Friends.Where(friend => friend.Name == LoginDialog.Title.Substring(25)))
                 {
-                    await _vk.PhotoTo(friend.Id, ReadFile(_file).Result, _file, pressed.Content != null && pressed.Content.ToString() == "Отправить на стену" ? 1 : 2, myText.Text);
+                    await _vk.PhotoTo(friend.Id, helper.ReadFile(_file).Result, _file, pressed.Content != null && pressed.Content.ToString() == "Отправить на стену" ? 1 : 2, myText.Text);
                 }
                 var dialogSuccess = new MessageDialog("Успешно отправлено!");
                 await dialogSuccess.ShowAsync();
-                FontSlider.Visibility = Visibility.Visible;
-                FontSliderSmall.Visibility = Visibility.Visible;
-                tbB.Visibility = Visibility.Visible;
-                tbS.Visibility = Visibility.Visible;
-
+                VisibleElements(true);
             }
         }
 

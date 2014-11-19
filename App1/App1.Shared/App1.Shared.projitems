@@ -16,6 +16,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Friend.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ImageHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vk.cs" />
   </ItemGroup>
 </Project>
