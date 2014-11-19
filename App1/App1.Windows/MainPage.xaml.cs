@@ -6,7 +6,6 @@ using Windows.UI.Text;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
 using System;
-using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
@@ -14,17 +13,16 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Popups;
-using Windows.Storage.Streams;
 using Swooper.Common;
 
 namespace Swooper
 {
     public sealed partial class MainPage
     {
-        private TextBox _tb;
+        private TextBox _titles;
         private StorageFile _file;
         private Vk _vk;
-        private ImageHelper helper = new ImageHelper();
+        private readonly ImageHelper _helper = new ImageHelper();
         private readonly ObservableDictionary _defaultViewModel = new ObservableDictionary();
         public ObservableDictionary DefaultViewModel
         {
@@ -39,7 +37,7 @@ namespace Swooper
             NavigationHelper = new NavigationHelper(this);
             NavigationHelper.LoadState += navigationHelper_LoadState;
             NavigationHelper.SaveState += navigationHelper_SaveState;
-            save.IsEnabled = false;
+            SaveImage.IsEnabled = false;
         }
         private void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
@@ -84,45 +82,42 @@ namespace Swooper
             var image = new BitmapImage();
             image.SetSource(stream);
             var scale = Math.Ceiling(image.PixelWidth > image.PixelHeight
-                ? helper.getWidthForImage(image.PixelWidth, 0)
-                : helper.getWidthForImage(image.PixelHeight, 1));
-            myPicture.Width = Math.Ceiling(image.PixelWidth / scale);
-            myPicture.Height = Math.Ceiling(image.PixelHeight / scale);
-            myPicture.Source = image;
-            border.Background = new SolidColorBrush(Colors.Black);
-            border.Width = myPicture.Width + 100;
-            border.Height = myPicture.Height + 150;
-            Canvas.SetLeft(myPicture, 50);
-            Canvas.SetTop(myPicture, 30);
-            Canvas.SetLeft(bigTextBox, 10);
-            Canvas.SetTop(bigTextBox, myPicture.Height + 35);
-            Canvas.SetLeft(smallTextBox, 10);
-            Canvas.SetTop(smallTextBox, myPicture.Height + 95);
-            bigTextBox.Width = border.Width - 20;
-            smallTextBox.Width = border.Width - 20;
-            bigTextBox.Visibility = Visibility.Visible;
-            smallTextBox.Visibility = Visibility.Visible;
-            bigTextBox.Focus(FocusState.Keyboard);
+                ? _helper.getWidthForImage(image.PixelWidth, 0)
+                : _helper.getWidthForImage(image.PixelHeight, 1));
+            MyPicture.Width = Math.Ceiling(image.PixelWidth / scale);
+            MyPicture.Height = Math.Ceiling(image.PixelHeight / scale);
+            MyPicture.Source = image;
+            Border.Background = new SolidColorBrush(Colors.Black);
+            Border.Width = MyPicture.Width + 100;
+            Border.Height = MyPicture.Height + 150;
+            Canvas.SetLeft(MyPicture, 50);
+            Canvas.SetTop(MyPicture, 30);
+            Canvas.SetLeft(BigTextBox, 10);
+            Canvas.SetTop(BigTextBox, MyPicture.Height + 35);
+            Canvas.SetLeft(SmallTextBox, 10);
+            Canvas.SetTop(SmallTextBox, MyPicture.Height + 95);
+            BigTextBox.Width = Border.Width - 20;
+            SmallTextBox.Width = Border.Width - 20;
+            BigTextBox.Visibility = Visibility.Visible;
+            SmallTextBox.Visibility = Visibility.Visible;
+            BigTextBox.Focus(FocusState.Keyboard);
             FontSlider.Margin = new Thickness(5, 40, 0, 0);
-            FontSlider.Height = border.Height - 50;
-            FontSliderSmall.Margin = new Thickness(border.Width - 50, 40, 0, 0);
-            FontSliderSmall.Height = border.Height - 50;
-            myFriends.Margin = new Thickness(Window.Current.Bounds.Width - 300, 10, 0, 0);
-            FontSlider.Visibility = Visibility.Visible;
-            FontSliderSmall.Visibility = Visibility.Visible;
-            tbB.Visibility = Visibility.Visible;
-            tbS.Visibility = Visibility.Visible;
-            tbS.Margin = new Thickness(border.Width - 50, 0, 0, 0);
-            save.IsEnabled = true;
+            FontSlider.Height = Border.Height - 50;
+            FontSliderSmall.Margin = new Thickness(Border.Width - 50, 40, 0, 0);
+            FontSliderSmall.Height = Border.Height - 50;
+            MyFriends.Margin = new Thickness(Window.Current.Bounds.Width - 300, 10, 0, 0);
+            VisibleElements(true); 
+            TitleRight.Margin = new Thickness(Border.Width - 50, 0, 0, 0);
+            SaveImage.IsEnabled = true;
         }
-        
+
 
         private async void save_button_click(object sender, RoutedEventArgs e)
         {
             VisibleElements(false);
-            await helper.CreateSaveBitmapAsync(border);
+            await _helper.CreateSaveBitmapAsync(Border);
             VisibleElements(true);
-        }        
+        }
 
         private async void vk_click(object sender, RoutedEventArgs e)
         {
@@ -143,30 +138,27 @@ namespace Swooper
             {
                 var tempitem = temp.Items[0];
                 temp.Items.RemoveAt(0);
-                if (myFriends.Items != null)
-                    myFriends.Items.Add(tempitem);
+                if (MyFriends.Items != null)
+                    MyFriends.Items.Add(tempitem);
             }
-            myFriends.Header = _vk._online + " друзей онлайн";
+            MyFriends.Header = _vk._online + " друзей онлайн";
         }
 
-
-        
         public void VisibleElements(bool flag)
         {
             if (!flag)
             {
                 FontSlider.Visibility = Visibility.Collapsed;
                 FontSliderSmall.Visibility = Visibility.Collapsed;
-                tbB.Visibility = Visibility.Collapsed;
-                tbS.Visibility = Visibility.Collapsed;
+                TitleLeft.Visibility = Visibility.Collapsed;
+                TitleRight.Visibility = Visibility.Collapsed;
             }
             else
             {
                 FontSlider.Visibility = Visibility.Visible;
                 FontSliderSmall.Visibility = Visibility.Visible;
-                tbB.Visibility = Visibility.Visible;
-                tbS.Visibility = Visibility.Visible;
-         
+                TitleLeft.Visibility = Visibility.Visible;
+                TitleRight.Visibility = Visibility.Visible;
             }
         }
 
@@ -181,11 +173,11 @@ namespace Swooper
             else
             {
                 VisibleElements(false);
-                await helper.CreateSaveBitmapAsync(border);
+                await _helper.CreateSaveBitmapAsync(Border);
                 LoginDialog.IsOpen = false;
                 foreach (var friend in _vk.Friends.Where(friend => friend.Name == LoginDialog.Title.Substring(25)))
                 {
-                    await _vk.PhotoTo(friend.Id, helper.ReadFile(_file).Result, _file, pressed.Content != null && pressed.Content.ToString() == "Отправить на стену" ? 1 : 2, myText.Text);
+                    await _vk.PhotoTo(friend.Id, _helper.ReadFile(_file).Result, _file, pressed.Content != null && pressed.Content.ToString() == "Отправить на стену" ? 1 : 2, myText.Text);
                 }
                 var dialogSuccess = new MessageDialog("Успешно отправлено!");
                 await dialogSuccess.ShowAsync();
@@ -203,16 +195,16 @@ namespace Swooper
         private void ValueChanged_sm(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (FontSlider == null) return;
-            if (smallTextBox.FontSize < FontSliderSmall.Value)
-                smallTextBox.Height += 2;
-            smallTextBox.FontSize = FontSliderSmall.Value;
+            if (SmallTextBox.FontSize < FontSliderSmall.Value)
+                SmallTextBox.Height += 2;
+            SmallTextBox.FontSize = FontSliderSmall.Value;
         }
         private void ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (FontSlider == null) return;
-            if (bigTextBox.FontSize < FontSlider.Value)
-                bigTextBox.Height += 2;
-            bigTextBox.FontSize = FontSlider.Value;
+            if (BigTextBox.FontSize < FontSlider.Value)
+                BigTextBox.Height += 2;
+            BigTextBox.FontSize = FontSlider.Value;
         }
 
         private void photo_click(object sender, RoutedEventArgs e)
@@ -251,15 +243,15 @@ namespace Swooper
                 var errorDialog = new MessageDialog("Камера отсутствует");
                 errorDialog.ShowAsync();
             }
-                SetCanvas();
+            SetCanvas();
         }
 
-        private void OpenContextB(object sender, ContextMenuEventArgs e)
+        private void OpenContext(object sender, ContextMenuEventArgs e)
         {
             e.Handled = true;
-            _tb = (TextBox)sender;
+            _titles = (TextBox)sender;
 
-            var f = new Popup
+            var contextMenu = new Popup
             {
                 IsLightDismissEnabled = true,
                 VerticalOffset = e.CursorTop - 50,
@@ -275,7 +267,7 @@ namespace Swooper
                 Height = 50
             };
 
-            var b = new Button
+            var bold = new Button
             {
                 FontSize = 15,
                 Width = 50,
@@ -283,9 +275,9 @@ namespace Swooper
                 Content = "B",
                 FontWeight = FontWeights.Bold
             };
-            b.Click += b_Click;
-            sp.Children.Add(b);
-            var k = new Button
+            bold.Click += BoldText;
+            sp.Children.Add(bold);
+            var italic = new Button
             {
                 FontSize = 15,
                 Width = 50,
@@ -293,33 +285,32 @@ namespace Swooper
                 Content = "K",
                 FontStyle = FontStyle.Italic
             };
-            k.Click += k_Click;
-            sp.Children.Add(k);
-            var fonts = new List<string> { "Tahoma", "Times New Roman", "Comic Sans" };
-            var cb = new ComboBox
+            italic.Click += ItalicText;
+            sp.Children.Add(italic);
+            var fonts = new ComboBox
             {
                 Width = 150,
-                ItemsSource = fonts,
-                SelectedValue = _tb.FontFamily.Source
+                ItemsSource = new List<string> { "Tahoma", "Times New Roman", "Comic Sans" },
+                SelectedValue = _titles.FontFamily.Source
             };
-            cb.SelectionChanged += cb_SelectionChanged;
-            sp.Children.Add(cb);
-            f.Child = sp;
+            fonts.SelectionChanged += ChangeFont;
+            sp.Children.Add(fonts);
+            contextMenu.Child = sp;
         }
 
-        private void cb_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ChangeFont(object sender, SelectionChangedEventArgs e)
         {
-            _tb.FontFamily = new FontFamily(e.AddedItems[0].ToString());
+            _titles.FontFamily = new FontFamily(e.AddedItems[0].ToString());
         }
 
-        void k_Click(object sender, RoutedEventArgs e)
+        void ItalicText(object sender, RoutedEventArgs e)
         {
-            _tb.FontStyle = bigTextBox.FontStyle == FontStyle.Normal ? FontStyle.Italic : FontStyle.Normal;
+            _titles.FontStyle = BigTextBox.FontStyle == FontStyle.Normal ? FontStyle.Italic : FontStyle.Normal;
         }
 
-        void b_Click(object sender, RoutedEventArgs e)
+        void BoldText(object sender, RoutedEventArgs e)
         {
-            _tb.FontWeight = bigTextBox.FontWeight.Weight == 400 ? FontWeights.Bold : FontWeights.Normal;
+            _titles.FontWeight = BigTextBox.FontWeight.Weight == 400 ? FontWeights.Bold : FontWeights.Normal;
         }
     }
 }

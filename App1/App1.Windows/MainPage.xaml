@@ -117,30 +117,30 @@
                         AutomationProperties.Name="Back"
                         AutomationProperties.AutomationId="BackButton"
                         AutomationProperties.ItemType="Navigation Button"/>
-            <TextBlock x:Name="pageTitle" Text="SWOOPER" Style="{StaticResource HeaderTextBlockStyle}" Grid.Column="1" 
+            <TextBlock x:Name="PageTitle" Text="SWOOPER" Style="{StaticResource HeaderTextBlockStyle}" Grid.Column="1" 
                         IsHitTestVisible="false" TextWrapping="NoWrap" VerticalAlignment="Bottom" Margin="0,0,30,40"/>
         </Grid>
-        <Canvas x:Name="border"  Height="501" Margin="189,10,418,117" Width="679" Grid.Column="1" Grid.Row="1" >
-            <Image x:Name="myPicture"  Height="411" Width="478" Canvas.Left="96" Canvas.Top="44"/>
-            <TextBox x:Name="bigTextBox" Style="{StaticResource TextBoxWithoutDelete}"  BorderBrush="{x:Null}" BorderThickness="3" Canvas.Left="300" Canvas.Top="400" Height ="60" Background="{x:Null}" Text="Введите текст" FontFamily="Times New Roman" FontSize="40" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Collapsed" ContextMenuOpening="OpenContextB"></TextBox>
-            <TextBox x:Name="smallTextBox"  Style="{StaticResource TextBoxWithoutDelete}" BorderBrush="{x:Null}" BorderThickness="3" Canvas.Left="300" Canvas.Top="400" Height ="50" Background="{x:Null}" Text="Введите текст" FontFamily="Times New Roman" FontSize="28" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed" ContextMenuOpening="OpenContextB"></TextBox>
+        <Canvas x:Name="Border"  Height="501" Margin="189,10,418,117" Width="679" Grid.Column="1" Grid.Row="1" >
+            <Image x:Name="MyPicture"  Height="411" Width="478" Canvas.Left="96" Canvas.Top="44"/>
+            <TextBox x:Name="BigTextBox" Style="{StaticResource TextBoxWithoutDelete}"  BorderBrush="{x:Null}" BorderThickness="3" Canvas.Left="300" Canvas.Top="400" Height ="60" Background="{x:Null}" Text="Введите текст" FontFamily="Times New Roman" FontSize="40" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Collapsed" ContextMenuOpening="OpenContext"></TextBox>
+            <TextBox x:Name="SmallTextBox"  Style="{StaticResource TextBoxWithoutDelete}" BorderBrush="{x:Null}" BorderThickness="3" Canvas.Left="300" Canvas.Top="400" Height ="50" Background="{x:Null}" Text="Введите текст" FontFamily="Times New Roman" FontSize="28" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed" ContextMenuOpening="OpenContext"></TextBox>
             <Slider x:Name="FontSlider" Grid.Column="1" HorizontalAlignment="Left" Margin="899,80,0,0"  VerticalAlignment="Top" Width="30" Height="400" Minimum ="35"
      Maximum = "45" Value = "40" Orientation ="Vertical"  ValueChanged="ValueChanged" Visibility="Collapsed"/>
             <Slider x:Name="FontSliderSmall" Grid.Column="1" HorizontalAlignment="Left" Margin="899,80,0,0" Grid.Row="1" VerticalAlignment="Top" Width="30" Height="400" Minimum ="20"
      Maximum = "30" Value = "28" Orientation ="Vertical"  ValueChanged="ValueChanged_sm" Visibility="Collapsed"/>
-            <TextBlock x:Name="tbB" TextAlignment="Center" FontSize="12" TextWrapping="Wrap" Text="Верхний текст" Width="50" Margin="0,0,0,0" Visibility="Collapsed"/>
-            <TextBlock x:Name="tbS" TextAlignment="Center" FontSize="12" TextWrapping="Wrap" Text="Нижний текст" Width="50" Margin="850,0,0,0" Visibility="Collapsed"/>
+            <TextBlock x:Name="TitleLeft" TextAlignment="Center" FontSize="12" TextWrapping="Wrap" Text="Верхний текст" Width="50" Margin="0,0,0,0" Visibility="Collapsed"/>
+            <TextBlock x:Name="TitleRight" TextAlignment="Center" FontSize="12" TextWrapping="Wrap" Text="Нижний текст" Width="50" Margin="850,0,0,0" Visibility="Collapsed"/>
         </Canvas>
-        <Button x:Name="button" Content="Выбрать изображение" HorizontalAlignment="Left" Margin="15,94,0,0" Grid.Row="1" VerticalAlignment="Top" Click="open_picture_click" Grid.ColumnSpan="2"
+        <Button x:Name="ChooseImage" Content="Выбрать изображение" HorizontalAlignment="Left" Margin="15,94,0,0" Grid.Row="1" VerticalAlignment="Top" Click="open_picture_click" Grid.ColumnSpan="2"
                 Grid.Column="0" Width="257" Height="50"/>
-        <Button x:Name="buttonCam" Content="Камера" HorizontalAlignment="Left" Margin="15,164,0,0" Grid.Row="1" VerticalAlignment="Top" Click="photo_click" Grid.ColumnSpan="2"
+        <Button x:Name="OpenCamera" Content="Камера" HorizontalAlignment="Left" Margin="15,164,0,0" Grid.Row="1" VerticalAlignment="Top" Click="photo_click" Grid.ColumnSpan="2"
                 Grid.Column="0" Width="257" Height="50"/>
 
-        <Button x:Name="save" Content="Сохранить изображение" HorizontalAlignment="Left" Margin="15,234,0,0" Grid.Row="1" VerticalAlignment="Top" Click="save_button_click" Grid.ColumnSpan="2" Height="50" Width="257"/>
+        <Button x:Name="SaveImage" Content="Сохранить изображение" HorizontalAlignment="Left" Margin="15,234,0,0" Grid.Row="1" VerticalAlignment="Top" Click="save_button_click" Grid.ColumnSpan="2" Height="50" Width="257"/>
         <Button HorizontalAlignment="Left" Margin="15,7,0,0" Grid.Row="1" VerticalAlignment="Top" Click="vk_click" Height="73" Width="257" Grid.ColumnSpan="2">
             <Image Source="Assets/vkicon.png" Width="232" Height="63"></Image>
         </Button>
-        <ListView x:Name="myFriends" Grid.Column="1" HorizontalAlignment="Left" Height="511" Margin="1049,0,0,0" Grid.Row="1" VerticalAlignment="Top" Width="214" IsItemClickEnabled="true" SelectionMode="None" ItemClick="click_item"/>
+        <ListView x:Name="MyFriends" Grid.Column="1" HorizontalAlignment="Left" Height="511" Margin="1049,0,0,0" Grid.Row="1" VerticalAlignment="Top" Width="214" IsItemClickEnabled="true" SelectionMode="None" ItemClick="click_item"/>
         <controls:CustomDialog x:FieldModifier="public" x:Name="LoginDialog" 
                        Title="Отправка изображения" 
                        Background="Teal" BackButtonVisibility="Visible">
