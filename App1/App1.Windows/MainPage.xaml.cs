@@ -19,6 +19,7 @@ namespace Swooper
 {
     public sealed partial class MainPage
     {
+        private bool _first = true;
         private TextBox _titles;
         private StorageFile _file;
         private Vk _vk;
@@ -37,7 +38,11 @@ namespace Swooper
             NavigationHelper = new NavigationHelper(this);
             NavigationHelper.LoadState += navigationHelper_LoadState;
             NavigationHelper.SaveState += navigationHelper_SaveState;
+            if (_first)
+            {
+                FirstStart();
             }
+        }
         private void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
         }
@@ -58,6 +63,11 @@ namespace Swooper
 
         #endregion
 
+        private async void FirstStart()
+        {
+            _file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/Yappi.jpg"));
+            SetCanvas();
+        }
         private async void open_picture_click(object sender, RoutedEventArgs e)
         {
             var filePicker = new FileOpenPicker
@@ -80,11 +90,13 @@ namespace Swooper
             var stream = await _file.OpenAsync(FileAccessMode.Read);
             var image = new BitmapImage();
             image.SetSource(stream);
-            var scale = Math.Ceiling(image.PixelWidth > image.PixelHeight
+            var scale = image.PixelWidth > image.PixelHeight
                 ? _helper.GetWidthForImage(image.PixelWidth, 0)
-                : _helper.GetWidthForImage(image.PixelHeight, 1));
-            MyPicture.Width = Math.Ceiling(image.PixelWidth / scale);
-            MyPicture.Height = Math.Ceiling(image.PixelHeight / scale);
+                : _helper.GetWidthForImage(image.PixelHeight, 1);
+            MyPicture.Width = image.PixelWidth / scale;
+            MyPicture.Height = image.PixelHeight / scale;
+            MyPicture.Width = Math.Ceiling(MyPicture.Width);
+            MyPicture.Height = Math.Ceiling(MyPicture.Height);
             MyPicture.Source = image;
             Border.Background = new SolidColorBrush(Colors.Black);
             Border.Width = MyPicture.Width + 100;
@@ -95,6 +107,11 @@ namespace Swooper
             Canvas.SetTop(BigTextBox, MyPicture.Height + 35);
             Canvas.SetLeft(SmallTextBox, 10);
             Canvas.SetTop(SmallTextBox, MyPicture.Height + 95);
+            if (_first)
+            {
+                BigTextBox.Text = "Добро пожаловать";
+                SmallTextBox.Text = "На Yappi Days!";
+            }
             BigTextBox.Width = Border.Width - 20;
             SmallTextBox.Width = Border.Width - 20;
             BigTextBox.Visibility = Visibility.Visible;
@@ -105,8 +122,9 @@ namespace Swooper
             FontSliderSmall.Margin = new Thickness(Border.Width - 50, 40, 0, 0);
             FontSliderSmall.Height = Border.Height - 50;
             MyFriends.Margin = new Thickness(Window.Current.Bounds.Width - 300, 10, 0, 0);
-            VisibleElements(true); 
+            VisibleElements(true);
             TitleRight.Margin = new Thickness(Border.Width - 50, 0, 0, 0);
+            _first = false;
         }
 
 
