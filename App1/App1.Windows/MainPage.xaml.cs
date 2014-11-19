@@ -37,8 +37,7 @@ namespace Swooper
             NavigationHelper = new NavigationHelper(this);
             NavigationHelper.LoadState += navigationHelper_LoadState;
             NavigationHelper.SaveState += navigationHelper_SaveState;
-            SaveImage.IsEnabled = false;
-        }
+            }
         private void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
         }
@@ -82,8 +81,8 @@ namespace Swooper
             var image = new BitmapImage();
             image.SetSource(stream);
             var scale = Math.Ceiling(image.PixelWidth > image.PixelHeight
-                ? _helper.getWidthForImage(image.PixelWidth, 0)
-                : _helper.getWidthForImage(image.PixelHeight, 1));
+                ? _helper.GetWidthForImage(image.PixelWidth, 0)
+                : _helper.GetWidthForImage(image.PixelHeight, 1));
             MyPicture.Width = Math.Ceiling(image.PixelWidth / scale);
             MyPicture.Height = Math.Ceiling(image.PixelHeight / scale);
             MyPicture.Source = image;
@@ -108,40 +107,15 @@ namespace Swooper
             MyFriends.Margin = new Thickness(Window.Current.Bounds.Width - 300, 10, 0, 0);
             VisibleElements(true); 
             TitleRight.Margin = new Thickness(Border.Width - 50, 0, 0, 0);
-            SaveImage.IsEnabled = true;
-        }
+            }
 
 
         private async void save_button_click(object sender, RoutedEventArgs e)
         {
+            if (_file == null) return;
             VisibleElements(false);
-            await _helper.CreateSaveBitmapAsync(Border);
+            _file = await _helper.CreateSaveBitmapAsync(Border);
             VisibleElements(true);
-        }
-
-        private async void vk_click(object sender, RoutedEventArgs e)
-        {
-            _vk = new Vk();
-            var temp = new ListView();
-            if (await _vk.OAuthVk() == "Cancel") return;
-            try
-            {
-                temp = await _vk.GetFriends();
-            }
-            catch (Exception)
-            {
-                var dialog = new MessageDialog("Произошла ошибка");
-                dialog.ShowAsync();
-            }
-            if (temp.Items == null) return;
-            for (var i = 0; i < temp.Items.Count; i++)
-            {
-                var tempitem = temp.Items[0];
-                temp.Items.RemoveAt(0);
-                if (MyFriends.Items != null)
-                    MyFriends.Items.Add(tempitem);
-            }
-            MyFriends.Header = _vk._online + " друзей онлайн";
         }
 
         public void VisibleElements(bool flag)
@@ -158,7 +132,9 @@ namespace Swooper
                 FontSlider.Visibility = Visibility.Visible;
                 FontSliderSmall.Visibility = Visibility.Visible;
                 TitleLeft.Visibility = Visibility.Visible;
+                TitleLeft.Foreground = new SolidColorBrush(Colors.FloralWhite);
                 TitleRight.Visibility = Visibility.Visible;
+                TitleRight.Foreground = new SolidColorBrush(Colors.FloralWhite);
             }
         }
 
@@ -173,11 +149,11 @@ namespace Swooper
             else
             {
                 VisibleElements(false);
-                await _helper.CreateSaveBitmapAsync(Border);
+                _file = await _helper.CreateSaveBitmapAsync(Border);
                 LoginDialog.IsOpen = false;
                 foreach (var friend in _vk.Friends.Where(friend => friend.Name == LoginDialog.Title.Substring(25)))
                 {
-                    await _vk.PhotoTo(friend.Id, _helper.ReadFile(_file).Result, _file, pressed.Content != null && pressed.Content.ToString() == "Отправить на стену" ? 1 : 2, myText.Text);
+                    await _vk.PhotoTo(friend.Id, _helper.ReadFile(_file).Result, _file, pressed.Content != null && pressed.Content.ToString() == "Отправить на стену" ? 1 : 2, MyText.Text);
                 }
                 var dialogSuccess = new MessageDialog("Успешно отправлено!");
                 await dialogSuccess.ShowAsync();
@@ -207,10 +183,6 @@ namespace Swooper
             BigTextBox.FontSize = FontSlider.Value;
         }
 
-        private void photo_click(object sender, RoutedEventArgs e)
-        {
-            CameraCapture();
-        }
         async private void CameraCapture()
         {
             var cameraUi = new CameraCaptureUI();
@@ -311,6 +283,36 @@ namespace Swooper
         void BoldText(object sender, RoutedEventArgs e)
         {
             _titles.FontWeight = BigTextBox.FontWeight.Weight == 400 ? FontWeights.Bold : FontWeights.Normal;
+        }
+
+        private void UseCamera(object sender, RoutedEventArgs e)
+        {
+            CameraCapture();
+        }
+
+        private async void VkontakteClick(object sender, RoutedEventArgs e)
+        {
+            _vk = new Vk();
+            var temp = new ListView();
+            if (await _vk.OAuthVk() == "Cancel") return;
+            try
+            {
+                temp = await _vk.GetFriends();
+            }
+            catch (Exception)
+            {
+                var dialog = new MessageDialog("Произошла ошибка");
+                dialog.ShowAsync();
+            }
+            if (temp.Items == null) return;
+            for (var i = 0; i < temp.Items.Count; i++)
+            {
+                var tempitem = temp.Items[0];
+                temp.Items.RemoveAt(0);
+                if (MyFriends.Items != null)
+                    MyFriends.Items.Add(tempitem);
+            }
+            MyFriends.Header = _vk.Online + " друзей онлайн";
         }
     }
 }

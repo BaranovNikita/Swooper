@@ -20,7 +20,7 @@ namespace Swooper
         private string _tokenUser;
         public Friend[] Friends;
         private ListView _lv;
-        public int _online;
+        public int Online;
 
         public async Task<string> OAuthVk()
         {
@@ -78,7 +78,7 @@ namespace Swooper
                             json["response"]["items"][i]["id"].ToObject<int>(),
                             json["response"]["items"][i]["online"].ToObject<int>());
                     j++;
-                    _online++;
+                    Online++;
                 }
                 for (var i = 0; i < count; i++)
                 {

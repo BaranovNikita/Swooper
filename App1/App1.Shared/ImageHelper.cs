@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
 using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
@@ -15,12 +12,8 @@ namespace Swooper
 {
     class ImageHelper
     {
-        private StorageFile _file;
-        public ImageHelper()
-            {
-                
-            }
-        public async Task CreateSaveBitmapAsync(FrameworkElement canvas)
+        public StorageFile File;
+        public async Task<StorageFile> CreateSaveBitmapAsync(FrameworkElement canvas)
         {
             var renderTargetBitmap = new RenderTargetBitmap();
             await renderTargetBitmap.RenderAsync(canvas);
@@ -28,26 +21,23 @@ namespace Swooper
             var picker = new FileSavePicker();
             picker.FileTypeChoices.Add("JPEG Image", new[] { ".jpg" });
             var file = await picker.PickSaveFileAsync();
-            if (file != null)
+            if (file == null) return null;
+            var pixels = await renderTargetBitmap.GetPixelsAsync();
+            using (var stream = await file.OpenAsync(FileAccessMode.ReadWrite))
             {
-                var pixels = await renderTargetBitmap.GetPixelsAsync();
-                using (var stream = await file.OpenAsync(FileAccessMode.ReadWrite))
-                {
-                    var encoder = await
-                        BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, stream);
-                    var bytes = pixels.ToArray();
-                    encoder.SetPixelData(BitmapPixelFormat.Bgra8,
-                        BitmapAlphaMode.Ignore,
-                        (uint)canvas.Width, (uint)canvas.Height,
-                        96, 96, bytes);
+                var encoder = await
+                    BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, stream);
+                var bytes = pixels.ToArray();
+                encoder.SetPixelData(BitmapPixelFormat.Bgra8,
+                    BitmapAlphaMode.Ignore,
+                    (uint)canvas.Width, (uint)canvas.Height,
+                    96, 96, bytes);
 
-                    await encoder.FlushAsync();
-                }
-                _file = file;
+                await encoder.FlushAsync();
             }
-
+            return file;
         }
-        public double getWidthForImage(double widthh, int type)
+        public double GetWidthForImage(double widthh, int type)
         {
             var scale = 0;
             var width = widthh;
@@ -72,7 +62,6 @@ namespace Swooper
                     reader.ReadBytes(fileBytes);
                 }
             }
-
             return fileBytes;
         }
 

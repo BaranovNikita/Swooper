@@ -84,13 +84,24 @@
             <Setter Property="Padding" Value="10,0,0,0" />
         </Style>
     </Page.Resources>
+    <Page.TopAppBar>
+        <CommandBar RequestedTheme="Light">
+            <CommandBar.SecondaryCommands>
+                <AppBarButton Label="Авторизация" Icon="Bold" Click="VkontakteClick"/>
+            </CommandBar.SecondaryCommands>
+            <AppBarButton Icon="OpenFile" Label="Открыть файл" Click="open_picture_click"/>
+            <AppBarButton Icon="Camera" Label="Открыть камеру" Click="UseCamera"/>
+            <AppBarSeparator/>
+            <AppBarButton Icon="Save" Label="Сохранить файл" Click="save_button_click"/>
+        </CommandBar>
+    </Page.TopAppBar>
 
     <!--
         This grid acts as a root panel for the page that defines two rows:
         * Row 0 contains the back button and page title
         * Row 1 contains the rest of the page layout
     -->
-    <Grid Name ="grid" Background="{ThemeResource AppBarToggleButtonCheckedDisabledBackgroundThemeBrush}">
+    <Grid Background="{ThemeResource AppBarToggleButtonCheckedDisabledBackgroundThemeBrush}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="40*"/>
             <ColumnDefinition Width="643*"/>
@@ -111,42 +122,33 @@
                 <ColumnDefinition Width="120"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Button x:Name="backButton" Margin="39,59,39,0" Command="{Binding NavigationHelper.GoBackCommand, ElementName=PageRoot}"
+            <Button Margin="39,59,39,0" Command="{Binding NavigationHelper.GoBackCommand, ElementName=PageRoot}"
                         Style="{StaticResource NavigationBackButtonNormalStyle}"
                         VerticalAlignment="Top"
                         AutomationProperties.Name="Back"
                         AutomationProperties.AutomationId="BackButton"
                         AutomationProperties.ItemType="Navigation Button"/>
-            <TextBlock x:Name="PageTitle" Text="SWOOPER" Style="{StaticResource HeaderTextBlockStyle}" Grid.Column="1" 
+            <TextBlock Text="SWOOPER" Style="{StaticResource HeaderTextBlockStyle}" Grid.Column="1" 
                         IsHitTestVisible="false" TextWrapping="NoWrap" VerticalAlignment="Bottom" Margin="0,0,30,40"/>
         </Grid>
         <Canvas x:Name="Border"  Height="501" Margin="189,10,418,117" Width="679" Grid.Column="1" Grid.Row="1" >
             <Image x:Name="MyPicture"  Height="411" Width="478" Canvas.Left="96" Canvas.Top="44"/>
             <TextBox x:Name="BigTextBox" Style="{StaticResource TextBoxWithoutDelete}"  BorderBrush="{x:Null}" BorderThickness="3" Canvas.Left="300" Canvas.Top="400" Height ="60" Background="{x:Null}" Text="Введите текст" FontFamily="Times New Roman" FontSize="40" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Collapsed" ContextMenuOpening="OpenContext"></TextBox>
             <TextBox x:Name="SmallTextBox"  Style="{StaticResource TextBoxWithoutDelete}" BorderBrush="{x:Null}" BorderThickness="3" Canvas.Left="300" Canvas.Top="400" Height ="50" Background="{x:Null}" Text="Введите текст" FontFamily="Times New Roman" FontSize="28" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed" ContextMenuOpening="OpenContext"></TextBox>
-            <Slider x:Name="FontSlider" Grid.Column="1" HorizontalAlignment="Left" Margin="899,80,0,0"  VerticalAlignment="Top" Width="30" Height="400" Minimum ="35"
+            <Slider x:Name="FontSlider" HorizontalAlignment="Left" Margin="899,80,0,0"  VerticalAlignment="Top" Width="30" Height="400" Minimum ="35"
      Maximum = "45" Value = "40" Orientation ="Vertical"  ValueChanged="ValueChanged" Visibility="Collapsed"/>
-            <Slider x:Name="FontSliderSmall" Grid.Column="1" HorizontalAlignment="Left" Margin="899,80,0,0" Grid.Row="1" VerticalAlignment="Top" Width="30" Height="400" Minimum ="20"
+            <Slider x:Name="FontSliderSmall" HorizontalAlignment="Left" Margin="899,80,0,0" VerticalAlignment="Top" Width="30" Height="400" Minimum ="20"
      Maximum = "30" Value = "28" Orientation ="Vertical"  ValueChanged="ValueChanged_sm" Visibility="Collapsed"/>
             <TextBlock x:Name="TitleLeft" TextAlignment="Center" FontSize="12" TextWrapping="Wrap" Text="Верхний текст" Width="50" Margin="0,0,0,0" Visibility="Collapsed"/>
-            <TextBlock x:Name="TitleRight" TextAlignment="Center" FontSize="12" TextWrapping="Wrap" Text="Нижний текст" Width="50" Margin="850,0,0,0" Visibility="Collapsed"/>
+            <TextBlock x:Name="TitleRight" TextAlignment="Center" FontSize="12" TextWrapping="Wrap" Text="Нижний текст" Width="50" Margin="850,0,0,0" Visibility="Collapsed" />
         </Canvas>
-        <Button x:Name="ChooseImage" Content="Выбрать изображение" HorizontalAlignment="Left" Margin="15,94,0,0" Grid.Row="1" VerticalAlignment="Top" Click="open_picture_click" Grid.ColumnSpan="2"
-                Grid.Column="0" Width="257" Height="50"/>
-        <Button x:Name="OpenCamera" Content="Камера" HorizontalAlignment="Left" Margin="15,164,0,0" Grid.Row="1" VerticalAlignment="Top" Click="photo_click" Grid.ColumnSpan="2"
-                Grid.Column="0" Width="257" Height="50"/>
-
-        <Button x:Name="SaveImage" Content="Сохранить изображение" HorizontalAlignment="Left" Margin="15,234,0,0" Grid.Row="1" VerticalAlignment="Top" Click="save_button_click" Grid.ColumnSpan="2" Height="50" Width="257"/>
-        <Button HorizontalAlignment="Left" Margin="15,7,0,0" Grid.Row="1" VerticalAlignment="Top" Click="vk_click" Height="73" Width="257" Grid.ColumnSpan="2">
-            <Image Source="Assets/vkicon.png" Width="232" Height="63"></Image>
-        </Button>
         <ListView x:Name="MyFriends" Grid.Column="1" HorizontalAlignment="Left" Height="511" Margin="1049,0,0,0" Grid.Row="1" VerticalAlignment="Top" Width="214" IsItemClickEnabled="true" SelectionMode="None" ItemClick="click_item"/>
-        <controls:CustomDialog x:FieldModifier="public" x:Name="LoginDialog" 
+        <controls:CustomDialog Grid.Row="0" Grid.Column="0" x:FieldModifier="public" x:Name="LoginDialog" 
                        Title="Отправка изображения" 
                        Background="Teal" BackButtonVisibility="Visible">
             <StackPanel>
                 <TextBlock Margin="0,0,0,8" FontSize="14.6667" FontWeight="SemiLight" Text="Введите текст сообщения" />
-                <controls:WatermarkTextBox x:Name="myText" HorizontalAlignment="Left" Watermark="Текст сообщения" Width="500" Height="35" />
+                <controls:WatermarkTextBox x:Name="MyText" HorizontalAlignment="Left" Watermark="Текст сообщения" Width="500" Height="35" />
                 <StackPanel Margin="0,20,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
                     <Button Content="Отправить на стену" Width="250" Margin="0,0,20,0" Click="ToMessage"/>
                     <Button Content="Отправить в сообщении" Width="250" Click="ToMessage" />
