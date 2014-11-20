@@ -54,8 +54,10 @@ namespace Swooper
             return "ok";
         }
 
-        public async Task<ListView> GetFriends()
+        public async Task<Object[]> GetFriends()
         {
+            var array = new Object[2];
+            var cb = new ComboBox();
             _lv = new ListView();
             var myfriends =
                         await
@@ -100,9 +102,18 @@ namespace Swooper
                             new SolidColorBrush(Friends[i].Online == 1 ? Colors.MediumSeaGreen : Colors.LightPink),
                         Content = Friends[i].Name
                     };
+                    var ci = new ComboBoxItem
+                    {
+                        Background =
+                            new SolidColorBrush(Friends[i].Online == 1 ? Colors.MediumSeaGreen : Colors.LightPink),
+                        Content = Friends[i].Name
+                    };
                     if (_lv.Items != null) _lv.Items.Add(li);
+                    if (cb.Items != null) cb.Items.Add(ci);
                 }
-                return _lv;
+                array[0] = _lv;
+                array[1] = cb;
+                return array;
             }
             catch
             {

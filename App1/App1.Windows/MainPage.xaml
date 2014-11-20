@@ -7,7 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Callisto.Controls"
-    mc:Ignorable="d">
+    mc:Ignorable="d" SizeChanged="Size_Changed">
 
     <Page.Resources>
         <Style x:Key="TextBoxWithoutDelete" TargetType="TextBox">
@@ -116,9 +116,10 @@
         </Grid.RowDefinitions>
 
         <!-- Back button and page title -->
-        <Grid Grid.ColumnSpan="2" Margin="0,0,0.429,0">
+        <Grid Grid.ColumnSpan="3" Margin="0,0,0.429,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Button Margin="39,59,39,0" Command="{Binding NavigationHelper.GoBackCommand, ElementName=PageRoot}"
@@ -129,10 +130,11 @@
                         AutomationProperties.ItemType="Navigation Button"/>
             <TextBlock Text="SWOOPER" Style="{StaticResource HeaderTextBlockStyle}" Grid.Column="1" 
                         IsHitTestVisible="false" TextWrapping="NoWrap" VerticalAlignment="Bottom" Margin="0,0,30,40"/>
+            <ComboBox  x:Name="ComboFriends" Grid.Column="2" Width="215" Height="50" HorizontalAlignment="Left" Visibility="Collapsed" SelectionChanged="lulull" />
         </Grid>
-        <Grid  Margin="0,10,0,0" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="20" >
+        <Grid  Margin="0,10,0,0" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" >
             <Canvas x:Name="Border" Margin="10" >
-                <Image x:Name="MyPicture"  Height="411" Width="478" Canvas.Top="-125"/>
+                <Image x:Name="MyPicture" Canvas.Top="-125"/>
                 <TextBox x:Name="BigTextBox" Style="{StaticResource TextBoxWithoutDelete}"  BorderBrush="{x:Null}" BorderThickness="3" Canvas.Left="300" Canvas.Top="400" Height ="60" Background="{x:Null}" Text="Введите текст" FontFamily="Times New Roman" FontSize="40" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Collapsed" ContextMenuOpening="OpenContext"/>
                 <TextBox x:Name="SmallTextBox"  Style="{StaticResource TextBoxWithoutDelete}" BorderBrush="{x:Null}" BorderThickness="3" Canvas.Left="300" Canvas.Top="400" Height ="50" Background="{x:Null}" Text="Введите текст" FontFamily="Times New Roman" FontSize="28" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed" ContextMenuOpening="OpenContext"/>
                 <Slider x:Name="FontSlider" HorizontalAlignment="Left" Margin="899,80,0,0"  VerticalAlignment="Top" Width="30" Height="400" Minimum ="35"
@@ -143,18 +145,28 @@
                 <TextBlock x:Name="TitleRight" TextAlignment="Center" FontSize="12" TextWrapping="Wrap" Text="Нижний текст" Width="50" Margin="850,0,0,0" Visibility="Collapsed" />
             </Canvas>
         </Grid>
-        <ListView x:Name="MyFriends" Grid.Column="1" HorizontalAlignment="Left" Height="511" Margin="1062,0,0,0" Grid.Row="1" VerticalAlignment="Top" Width="214" IsItemClickEnabled="true" SelectionMode="None" ItemClick="click_item"/>
-        <controls:CustomDialog Grid.Row="0" Grid.Column="0" x:FieldModifier="public" x:Name="LoginDialog" 
+        <ListView x:Name="MyFriends" Grid.Column="1" HorizontalAlignment="Left" Height="511" Margin="1062,0,0,0" Grid.Row="1" VerticalAlignment="Top" Width="214" IsItemClickEnabled="true" SelectionMode="None" ItemClick="click_item" Visibility="Collapsed"/>
+        <controls:CustomDialog Margin="50,0,0,0" Grid.Row="0" Grid.Column="0" x:FieldModifier="public" x:Name="LoginDialog" 
                        Title="Отправка изображения" 
                        Background="Teal" BackButtonVisibility="Visible">
-            <StackPanel>
-                <TextBlock Margin="0,0,0,8" FontSize="14.6667" FontWeight="SemiLight" Text="Введите текст сообщения" />
-                <controls:WatermarkTextBox x:Name="MyText" HorizontalAlignment="Left" Watermark="Текст сообщения" Width="500" Height="35" />
-                <StackPanel Margin="0,20,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
-                    <Button Content="Отправить на стену" Width="250" Margin="0,0,20,0" Click="ToMessage"/>
+            <Grid Margin="0,0,0.429,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Button x:Name="BackInLogin" Style="{StaticResource NavigationBackButtonNormalStyle}" Width="50" Click="ToMessage" Margin="0" Grid.Column="0" Grid.Row="0"/>
+                <TextBlock Margin="0" FontSize="14" FontWeight="SemiLight" Text="Введите текст сообщения" Grid.Column="1" Grid.Row="0" VerticalAlignment="Center"/>
+                <controls:WatermarkTextBox x:Name="MyText" HorizontalAlignment="Left" Watermark="Текст сообщения" Width="500" Height="35" Margin="0" Grid.Column="1" Grid.Row="1"/>
+                <StackPanel Margin="0,5,0,0" HorizontalAlignment="Left" Orientation="Horizontal" Grid.Column="1" Grid.Row="2">
+                    <Button Content="Отправить на стену" Width="250" Margin="0" Click="ToMessage"/>
                     <Button Content="Отправить в сообщении" Width="250" Click="ToMessage" />
                 </StackPanel>
-            </StackPanel>
+            </Grid>
         </controls:CustomDialog>
     </Grid>
 </Page>

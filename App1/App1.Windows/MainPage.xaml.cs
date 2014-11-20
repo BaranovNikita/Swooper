@@ -19,6 +19,7 @@ namespace Swooper
 {
     public sealed partial class MainPage
     {
+        public double DefaultWidth;
         private bool _first = true;
         private TextBox _titles;
         private StorageFile _file;
@@ -65,8 +66,8 @@ namespace Swooper
 
         private async void FirstStart()
         {
+            DefaultWidth = Window.Current.Bounds.Width;
             _file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/Yappi.jpg"));
-            SetCanvas();
         }
         private async void open_picture_click(object sender, RoutedEventArgs e)
         {
@@ -107,11 +108,8 @@ namespace Swooper
             Canvas.SetTop(BigTextBox, MyPicture.Height + 35);
             Canvas.SetLeft(SmallTextBox, 10);
             Canvas.SetTop(SmallTextBox, MyPicture.Height + 95);
-            if (_first)
-            {
-                BigTextBox.Text = "Добро пожаловать";
-                SmallTextBox.Text = "На Yappi Days!";
-            }
+            BigTextBox.Text = _first ? "Добро пожаловать" : "Введите текст";
+            SmallTextBox.Text = _first ? "На Yappi Days!" : "Введите текст"; ;
             BigTextBox.Width = Border.Width - 20;
             SmallTextBox.Width = Border.Width - 20;
             BigTextBox.Visibility = Visibility.Visible;
@@ -159,6 +157,11 @@ namespace Swooper
         private async void ToMessage(object sender, RoutedEventArgs e)
         {
             var pressed = (Button)sender;
+            if (pressed.Name == "BackInLogin")
+            {
+                LoginDialog.IsOpen = false;
+                return;
+            }
             if (_file == null)
             {
                 var noFile = new MessageDialog("Картинка не выбрана!");
@@ -312,10 +315,13 @@ namespace Swooper
         {
             _vk = new Vk();
             var temp = new ListView();
-            if (await _vk.OAuthVk() == "Cancel") return;
+            var tempForCombo = new ComboBox();
             try
             {
-                temp = await _vk.GetFriends();
+                if (await _vk.OAuthVk() == "Cancel") return;
+                var array =  await _vk.GetFriends();
+                temp = (ListView) array[0];
+                tempForCombo = (ComboBox) array[1];
             }
             catch (Exception)
             {
@@ -326,11 +332,51 @@ namespace Swooper
             for (var i = 0; i < temp.Items.Count; i++)
             {
                 var tempitem = temp.Items[0];
+                if (tempForCombo.Items == null) continue;
+                var tempCombo = tempForCombo.Items[0];
                 temp.Items.RemoveAt(0);
+                tempForCombo.Items.RemoveAt(0);
                 if (MyFriends.Items != null)
                     MyFriends.Items.Add(tempitem);
+                if (ComboFriends.Items != null)
+                    ComboFriends.Items.Add(tempCombo);
             }
             MyFriends.Header = _vk.Online + " друзей онлайн";
+            ShowFriends();
+        }
+
+        private void Size_Changed(object sender, SizeChangedEventArgs e)
+        {
+            SetCanvas();
+            ShowFriends();
+        }
+
+        private void ShowFriends()
+        {
+            if (_vk == null) return;
+            if (Window.Current.Bounds.Width < DefaultWidth)
+            {
+                ComboFriends.Visibility = Visibility.Visible;
+                BackInLogin.Visibility = Visibility.Visible;
+                LoginDialog.Width = Window.Current.Bounds.Width - 50;
+                LoginDialog.BackButtonVisibility = Visibility.Collapsed;
+                MyFriends.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                BackInLogin.Visibility = Visibility.Collapsed;
+                MyFriends.Visibility = Visibility.Visible;
+                LoginDialog.BackButtonVisibility = Visibility.Visible;
+                ComboFriends.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void lulull(object sender, SelectionChangedEventArgs e)
+        {
+            var typeItem = (ComboBoxItem)ComboFriends.SelectedItem;
+            var value = typeItem.Content.ToString();
+            LoginDialog.Title = "Отправка изображения для " + value;
+            LoginDialog.IsOpen = true;
         }
     }
 }

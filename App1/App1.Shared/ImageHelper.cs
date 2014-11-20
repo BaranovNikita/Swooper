@@ -12,13 +12,15 @@ namespace Swooper
 {
     class ImageHelper
     {
-        public StorageFile File;
         public async Task<StorageFile> CreateSaveBitmapAsync(FrameworkElement canvas)
         {
             var renderTargetBitmap = new RenderTargetBitmap();
             await renderTargetBitmap.RenderAsync(canvas);
-
-            var picker = new FileSavePicker();
+            var picker = new FileSavePicker
+            {
+                SuggestedFileName = "Swooper-" + DateTime.Now.ToString().Replace(" ","-"),
+                SuggestedStartLocation = PickerLocationId.PicturesLibrary
+            };
             picker.FileTypeChoices.Add("JPEG Image", new[] { ".jpg" });
             var file = await picker.PickSaveFileAsync();
             if (file == null) return null;
@@ -41,9 +43,9 @@ namespace Swooper
         {
             var scale = 0;
             var width = widthh;
-            var h = Window.Current.Bounds.Height - 300;
-            var w = Window.Current.Bounds.Width - 600;
-
+            var h = Math.Ceiling(Window.Current.Bounds.Height/1.65);
+            var w = Math.Ceiling(Window.Current.Bounds.Width/1.8);
+          
             while ((width / 1.001) > (type == 1 ? h : w))
             {
                 scale++;
