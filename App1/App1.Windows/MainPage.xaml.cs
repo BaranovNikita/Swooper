@@ -371,7 +371,7 @@ namespace Swooper
             }
         }
 
-        private void lulull(object sender, SelectionChangedEventArgs e)
+        private void ChooseCombo(object sender, SelectionChangedEventArgs e)
         {
             var typeItem = (ComboBoxItem)ComboFriends.SelectedItem;
             var value = typeItem.Content.ToString();

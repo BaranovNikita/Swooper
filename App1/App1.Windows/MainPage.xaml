@@ -130,7 +130,7 @@
                         AutomationProperties.ItemType="Navigation Button"/>
             <TextBlock Text="SWOOPER" Style="{StaticResource HeaderTextBlockStyle}" Grid.Column="1" 
                         IsHitTestVisible="false" TextWrapping="NoWrap" VerticalAlignment="Bottom" Margin="0,0,30,40"/>
-            <ComboBox  x:Name="ComboFriends" Grid.Column="2" Width="215" Height="50" HorizontalAlignment="Left" Visibility="Collapsed" SelectionChanged="lulull" />
+            <ComboBox  x:Name="ComboFriends" Grid.Column="2" Width="215" Height="50" HorizontalAlignment="Left" Visibility="Collapsed" SelectionChanged="ChooseCombo" />
         </Grid>
         <Grid  Margin="0,10,0,0" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" >
             <Canvas x:Name="Border" Margin="10" >

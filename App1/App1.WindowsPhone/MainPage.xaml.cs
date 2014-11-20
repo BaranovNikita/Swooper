@@ -1,116 +1,74 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Windows.Media.Capture;
 using Windows.UI;
+using Windows.UI.Text;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
 using System;
-using System.Threading.Tasks;
-using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.UI.Popups;
-using Windows.Storage.Streams;
-// Документацию по шаблону элемента "Основная страница" см. по адресу http://go.microsoft.com/fwlink/?LinkID=390556
 using Swooper.Common;
 
 namespace Swooper
 {
-    /// <summary>
-    /// Пустая страница, которую можно использовать саму по себе или для перехода внутри фрейма.
-    /// </summary>
-    public sealed partial class MainPage : Page
+    public sealed partial class MainPage
     {
+        public double DefaultWidth;
+        private bool _first = true;
+        private TextBox _titles;
         private StorageFile _file;
         private Vk _vk;
+        private readonly ImageHelper _helper = new ImageHelper();
         private readonly ObservableDictionary _defaultViewModel = new ObservableDictionary();
+        public ObservableDictionary DefaultViewModel
+        {
+            get { return _defaultViewModel; }
+        }
+        public NavigationHelper NavigationHelper { get; private set; }
 
-        private NavigationHelper navigationHelper;
-        private ObservableDictionary defaultViewModel = new ObservableDictionary();
 
         public MainPage()
         {
-            this.InitializeComponent();
-
-            this.navigationHelper = new NavigationHelper(this);
-            this.navigationHelper.LoadState += this.NavigationHelper_LoadState;
-            this.navigationHelper.SaveState += this.NavigationHelper_SaveState;
+            InitializeComponent();
+            NavigationHelper = new NavigationHelper(this);
+            NavigationHelper.LoadState += navigationHelper_LoadState;
+            NavigationHelper.SaveState += navigationHelper_SaveState;
+            if (_first)
+            {
+                FirstStart();
+            }
         }
-
-        /// <summary>
-        /// Получает объект <see cref="NavigationHelper"/>, связанный с данным объектом <see cref="Page"/>.
-        /// </summary>
-        public NavigationHelper NavigationHelper
+        private void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
-            get { return this.navigationHelper; }
         }
-
-        /// <summary>
-        /// Получает модель представлений для данного объекта <see cref="Page"/>.
-        /// Эту настройку можно изменить на модель строго типизированных представлений.
-        /// </summary>
-        public ObservableDictionary DefaultViewModel
-        {
-            get { return this.defaultViewModel; }
-        }
-
-        /// <summary>
-        /// Заполняет страницу содержимым, передаваемым в процессе навигации.  Также предоставляется любое сохраненное состояние
-        /// при повторном создании страницы из предыдущего сеанса.
-        /// </summary>
-        /// <param name="sender">
-        /// Источник события; как правило, <see cref="NavigationHelper"/>
-        /// </param>
-        /// <param name="e">Данные события, предоставляющие параметр навигации, который передается
-        /// <see cref="Frame.Navigate(Type, Object)"/> при первоначальном запросе этой страницы и
-        /// словарь состояний, сохраненных этой страницей в ходе предыдущего
-        /// сеанса.  Это состояние будет равно NULL при первом посещении страницы.</param>
-        private void NavigationHelper_LoadState(object sender, LoadStateEventArgs e)
+        private void navigationHelper_SaveState(object sender, SaveStateEventArgs e)
         {
         }
 
-        /// <summary>
-        /// Сохраняет состояние, связанное с данной страницей, в случае приостановки приложения или
-        /// удаления страницы из кэша навигации.  Значения должны соответствовать требованиям сериализации
-        /// <see cref="SuspensionManager.SessionState"/>.
-        /// </summary>
-        /// <param name="sender">Источник события; как правило, <see cref="NavigationHelper"/></param>
-        /// <param name="e">Данные события, которые предоставляют пустой словарь для заполнения
-        /// сериализуемым состоянием.</param>
-        private void NavigationHelper_SaveState(object sender, SaveStateEventArgs e)
-        {
-        }
-
-        #region Регистрация NavigationHelper
-
-        /// <summary>
-        /// Методы, предоставленные в этом разделе, используются исключительно для того, чтобы
-        /// NavigationHelper для отклика на методы навигации страницы.
-        /// <para>
-        /// Логика страницы должна быть размещена в обработчиках событий для 
-        /// <see cref="NavigationHelper.LoadState"/>
-        /// и <see cref="NavigationHelper.SaveState"/>.
-        /// Параметр навигации доступен в методе LoadState 
-        /// в дополнение к состоянию страницы, сохраненному в ходе предыдущего сеанса.
-        /// </para>
-        /// </summary>
-        /// <param name="e">Предоставляет данные для методов навигации и обработчики
-        /// событий, которые не могут отменить запрос навигации.</param>
+        #region NavigationHelper registration
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            this.navigationHelper.OnNavigatedTo(e);
+            NavigationHelper.OnNavigatedTo(e);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            this.navigationHelper.OnNavigatedFrom(e);
+            NavigationHelper.OnNavigatedFrom(e);
         }
 
         #endregion
 
+        private async void FirstStart()
+        {
+            DefaultWidth = Window.Current.Bounds.Width;
+            _file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/Yappi.jpg"));
+        }
         private async void open_picture_click(object sender, RoutedEventArgs e)
         {
             var filePicker = new FileOpenPicker
@@ -133,95 +91,237 @@ namespace Swooper
             var stream = await _file.OpenAsync(FileAccessMode.Read);
             var image = new BitmapImage();
             image.SetSource(stream);
-            var scale = Math.Ceiling(image.PixelWidth > image.PixelHeight
-                ? getWidthForImage(image.PixelWidth, 0)
-                : getWidthForImage(image.PixelHeight, 1));
-            myPicture.Width = Math.Ceiling(image.PixelWidth / scale);
-            myPicture.Height = Math.Ceiling(image.PixelHeight / scale);
-            myPicture.Source = image;
-            border.Background = new SolidColorBrush(Colors.Black);
-            border.Width = myPicture.Width + 100;
-            border.Height = myPicture.Height + 150;
-            Canvas.SetLeft(myPicture, 50);
-            Canvas.SetTop(myPicture, 30);
-            Canvas.SetLeft(bigTextBox, 10);
-            Canvas.SetTop(bigTextBox, myPicture.Height + 35);
-            Canvas.SetLeft(smallTextBox, 10);
-            Canvas.SetTop(smallTextBox, myPicture.Height + 95);
-            bigTextBox.Width = border.Width - 20;
-            smallTextBox.Width = border.Width - 20;
-            bigTextBox.Visibility = Visibility.Visible;
-            smallTextBox.Visibility = Visibility.Visible;
-            bigTextBox.Focus(FocusState.Keyboard);
+            var scale = image.PixelWidth > image.PixelHeight
+                ? _helper.GetWidthForImage(image.PixelWidth, 0)
+                : _helper.GetWidthForImage(image.PixelHeight, 1);
+            MyPicture.Width = image.PixelWidth / scale;
+            MyPicture.Height = image.PixelHeight / scale;
+            MyPicture.Width = Math.Ceiling(MyPicture.Width);
+            MyPicture.Height = Math.Ceiling(MyPicture.Height);
+            MyPicture.Source = image;
+            Border.Background = new SolidColorBrush(Colors.Black);
+            Border.Width = MyPicture.Width + 100;
+            Border.Height = MyPicture.Height + 150;
+            Canvas.SetLeft(MyPicture, 50);
+            Canvas.SetTop(MyPicture, 30);
+            Canvas.SetLeft(BigTextBox, 10);
+            Canvas.SetTop(BigTextBox, MyPicture.Height + 35);
+            Canvas.SetLeft(SmallTextBox, 10);
+            Canvas.SetTop(SmallTextBox, MyPicture.Height + 95);
+            BigTextBox.Text = _first ? "Добро пожаловать" : "Введите текст";
+            SmallTextBox.Text = _first ? "На Yappi Days!" : "Введите текст"; ;
+            BigTextBox.Width = Border.Width - 20;
+            SmallTextBox.Width = Border.Width - 20;
+            BigTextBox.Visibility = Visibility.Visible;
+            SmallTextBox.Visibility = Visibility.Visible;
+            BigTextBox.Focus(FocusState.Keyboard);
             FontSlider.Margin = new Thickness(5, 40, 0, 0);
-            FontSlider.Height = border.Height - 50;
-            FontSliderSmall.Margin = new Thickness(border.Width - 50, 40, 0, 0);
-            FontSliderSmall.Height = border.Height - 50;
-            myFriends.Margin = new Thickness(Window.Current.Bounds.Width - 300, 10, 0, 0);
-            FontSlider.Visibility = Visibility.Visible;
-            FontSliderSmall.Visibility = Visibility.Visible;
-            tbB.Visibility = Visibility.Visible;
-            tbS.Visibility = Visibility.Visible;
-            tbS.Margin = new Thickness(border.Width - 50, 0, 0, 0);
+            FontSlider.Height = Border.Height - 50;
+            FontSliderSmall.Margin = new Thickness(Border.Width - 50, 40, 0, 0);
+            FontSliderSmall.Height = Border.Height - 50;
+            MyFriends.Margin = new Thickness(Window.Current.Bounds.Width - 300, 10, 0, 0);
+            VisibleElements(true);
+            TitleRight.Margin = new Thickness(Border.Width - 50, 0, 0, 0);
+            _first = false;
         }
-        private double getWidthForImage(double widthh, int type)
-        {
-            var scale = 0;
-            var width = widthh;
-            while ((width / 1.1) > (type == 1 ? Window.Current.Bounds.Height - 300 : 600))
-            {
-                scale++;
-                width = width / 1.1;
-            }
-            width /= 1.1;
-            return scale == 0 ? 1 : widthh / width;
 
-        }
 
         private async void save_button_click(object sender, RoutedEventArgs e)
         {
-            FontSlider.Visibility = Visibility.Collapsed;
-            FontSliderSmall.Visibility = Visibility.Collapsed;
-            tbB.Visibility = Visibility.Collapsed;
-            tbS.Visibility = Visibility.Collapsed;
-            await CreateSaveBitmapAsync(border);
+            if (_file == null) return;
+            VisibleElements(false);
+            _file = await _helper.CreateSaveBitmapAsync(Border);
+            VisibleElements(true);
         }
 
-        private async Task CreateSaveBitmapAsync(FrameworkElement canvas)
+        public void VisibleElements(bool flag)
         {
-            var renderTargetBitmap = new RenderTargetBitmap();
-            await renderTargetBitmap.RenderAsync(canvas);
-
-            var picker = new FileSavePicker();
-            picker.FileTypeChoices.Add("JPEG Image", new[] { ".jpg" });
-            var file = await picker.PickSaveFileAsync();
-            if (file != null)
+            if (!flag)
             {
-                var pixels = await renderTargetBitmap.GetPixelsAsync();
-                using (var stream = await file.OpenAsync(FileAccessMode.ReadWrite))
-                {
-                    var encoder = await
-                        BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, stream);
-                    var bytes = pixels.ToArray();
-                    encoder.SetPixelData(BitmapPixelFormat.Bgra8,
-                                         BitmapAlphaMode.Ignore,
-                                         (uint)canvas.Width, (uint)canvas.Height,
-                                         96, 96, bytes);
-
-                    await encoder.FlushAsync();
-                }
+                FontSlider.Visibility = Visibility.Collapsed;
+                FontSliderSmall.Visibility = Visibility.Collapsed;
+                TitleLeft.Visibility = Visibility.Collapsed;
+                TitleRight.Visibility = Visibility.Collapsed;
             }
-            _file = file;
+            else
+            {
+                FontSlider.Visibility = Visibility.Visible;
+                FontSliderSmall.Visibility = Visibility.Visible;
+                TitleLeft.Visibility = Visibility.Visible;
+                TitleLeft.Foreground = new SolidColorBrush(Colors.FloralWhite);
+                TitleRight.Visibility = Visibility.Visible;
+                TitleRight.Foreground = new SolidColorBrush(Colors.FloralWhite);
+            }
         }
 
-        private async void vk_click(object sender, RoutedEventArgs e)
+        private async void ToMessage(object sender, RoutedEventArgs e)
+        {
+            var pressed = (Button)sender;
+            if (pressed.Name == "BackInLogin")
+            {
+                LoginDialog.IsOpen = false;
+                return;
+            }
+            if (_file == null)
+            {
+                var noFile = new MessageDialog("Картинка не выбрана!");
+                noFile.ShowAsync();
+            }
+            else
+            {
+                VisibleElements(false);
+                _file = await _helper.CreateSaveBitmapAsync(Border);
+                LoginDialog.IsOpen = false;
+                foreach (var friend in _vk.Friends.Where(friend => friend.Name == LoginDialog.Title.Substring(25)))
+                {
+                    await _vk.PhotoTo(friend.Id, _helper.ReadFile(_file).Result, _file, pressed.Content != null && pressed.Content.ToString() == "Отправить на стену" ? 1 : 2, MyText.Text);
+                }
+                var dialogSuccess = new MessageDialog("Успешно отправлено!");
+                await dialogSuccess.ShowAsync();
+                VisibleElements(true);
+            }
+        }
+
+        private void click_item(object sender, ItemClickEventArgs e)
+        {
+            if (_file == null) return;
+            LoginDialog.Title = "Отправка изображения для " + e.ClickedItem;
+            LoginDialog.IsOpen = true;
+        }
+
+        private void ValueChanged_sm(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (FontSlider == null) return;
+            if (SmallTextBox.FontSize < FontSliderSmall.Value)
+                SmallTextBox.Height += 2;
+            SmallTextBox.FontSize = FontSliderSmall.Value;
+        }
+        private void ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (FontSlider == null) return;
+            if (BigTextBox.FontSize < FontSlider.Value)
+                BigTextBox.Height += 2;
+            BigTextBox.FontSize = FontSlider.Value;
+        }
+
+        /*async private void CameraCapture()
+        {
+            var cameraUi = new CameraCaptureUI();
+            cameraUi.PhotoSettings.AllowCropping = false;
+            cameraUi.PhotoSettings.MaxResolution = CameraCaptureUIMaxPhotoResolution.MediumXga;
+            try
+            {
+                var capturedMedia =
+                    await cameraUi.CaptureFileAsync(CameraCaptureUIMode.Photo);
+
+                if (capturedMedia != null)
+                {
+                    using (var streamCamera = await capturedMedia.OpenAsync(FileAccessMode.Read))
+                    {
+                        var bitmapCamera = new BitmapImage();
+                        bitmapCamera.SetSource(streamCamera);
+                        var width = bitmapCamera.PixelWidth;
+                        var height = bitmapCamera.PixelHeight;
+                        var wBitmap = new WriteableBitmap(width, height);
+                        using (var stream = await capturedMedia.OpenAsync(FileAccessMode.Read))
+                        {
+                            wBitmap.SetSource(stream);
+                        }
+                    }
+                }
+                _file = capturedMedia;
+            }
+            catch (Exception)
+            {
+                var errorDialog = new MessageDialog("Камера отсутствует");
+                errorDialog.ShowAsync();
+            }
+            SetCanvas();
+        }*/
+
+        private void OpenContext(object sender, ContextMenuEventArgs e)
+        {
+            e.Handled = true;
+            _titles = (TextBox)sender;
+
+            var contextMenu = new Popup
+            {
+                IsLightDismissEnabled = true,
+                VerticalOffset = e.CursorTop - 50,
+                HorizontalOffset = e.CursorLeft,
+                Height = 350,
+                IsOpen = true
+            };
+            var sp = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Background = new SolidColorBrush(Colors.Gray),
+                Width = 300,
+                Height = 50
+            };
+
+            var bold = new Button
+            {
+                FontSize = 15,
+                Width = 50,
+                Height = 50,
+                Content = "B",
+                FontWeight = FontWeights.Bold
+            };
+            bold.Click += BoldText;
+            sp.Children.Add(bold);
+            var italic = new Button
+            {
+                FontSize = 15,
+                Width = 50,
+                Height = 50,
+                Content = "K",
+                FontStyle = FontStyle.Italic
+            };
+            italic.Click += ItalicText;
+            sp.Children.Add(italic);
+            var fonts = new ComboBox
+            {
+                Width = 150,
+                ItemsSource = new List<string> { "Tahoma", "Times New Roman", "Comic Sans" },
+                SelectedValue = _titles.FontFamily.Source
+            };
+            fonts.SelectionChanged += ChangeFont;
+            sp.Children.Add(fonts);
+            contextMenu.Child = sp;
+        }
+
+        private void ChangeFont(object sender, SelectionChangedEventArgs e)
+        {
+            _titles.FontFamily = new FontFamily(e.AddedItems[0].ToString());
+        }
+
+        void ItalicText(object sender, RoutedEventArgs e)
+        {
+            _titles.FontStyle = BigTextBox.FontStyle == FontStyle.Normal ? FontStyle.Italic : FontStyle.Normal;
+        }
+
+        void BoldText(object sender, RoutedEventArgs e)
+        {
+            _titles.FontWeight = BigTextBox.FontWeight.Weight == 400 ? FontWeights.Bold : FontWeights.Normal;
+        }
+
+        private void UseCamera(object sender, RoutedEventArgs e)
+        {
+            //CameraCapture();
+        }
+
+        private async void VkontakteClick(object sender, RoutedEventArgs e)
         {
             _vk = new Vk();
             var temp = new ListView();
-            if (await _vk.OAuthVk() == "Cancel") return;
+            var tempForCombo = new ComboBox();
             try
             {
-                temp = await _vk.GetFriends();
+                if (await _vk.OAuthVk() == "Cancel") return;
+                var array =  await _vk.GetFriends();
+                temp = (ListView) array[0];
+                tempForCombo = (ComboBox) array[1];
             }
             catch (Exception)
             {
@@ -232,127 +332,51 @@ namespace Swooper
             for (var i = 0; i < temp.Items.Count; i++)
             {
                 var tempitem = temp.Items[0];
+                if (tempForCombo.Items == null) continue;
+                var tempCombo = tempForCombo.Items[0];
                 temp.Items.RemoveAt(0);
-                if (myFriends.Items != null) myFriends.Items.Add(tempitem);
+                tempForCombo.Items.RemoveAt(0);
+                if (MyFriends.Items != null)
+                    MyFriends.Items.Add(tempitem);
+                if (ComboFriends.Items != null)
+                    ComboFriends.Items.Add(tempCombo);
             }
+            MyFriends.Header = _vk.Online + " друзей онлайн";
+            ShowFriends();
         }
 
-
-        public async Task<byte[]> ReadFile(StorageFile file)
+        private void Size_Changed(object sender, SizeChangedEventArgs e)
         {
-            byte[] fileBytes;
-            using (var stream = await file.OpenReadAsync())
-            {
-                fileBytes = new byte[stream.Size];
-                using (var reader = new DataReader(stream))
-                {
-                    await reader.LoadAsync((uint)stream.Size);
-                    reader.ReadBytes(fileBytes);
-                }
-            }
-
-            return fileBytes;
+            SetCanvas();
+            ShowFriends();
         }
 
-
-        private async void ToWall(object sender, RoutedEventArgs e)
+        private void ShowFriends()
         {
-            if (_file == null)
+            if (_vk == null) return;
+            if (Window.Current.Bounds.Width < DefaultWidth)
             {
-                var noFile = new MessageDialog("Картинка не выбрана!");
-                noFile.ShowAsync();
+                ComboFriends.Visibility = Visibility.Visible;
+                BackInLogin.Visibility = Visibility.Visible;
+                LoginDialog.Width = Window.Current.Bounds.Width - 50;
+                LoginDialog.BackButtonVisibility = Visibility.Collapsed;
+                MyFriends.Visibility = Visibility.Collapsed;
             }
             else
             {
-                await CreateSaveBitmapAsync(border);
-                LoginDialog.IsOpen = false;
-                foreach (var friend in _vk.Friends.Where(friend => friend.Name == LoginDialog.Title.Substring(25)))
-                {
-                    await _vk.PhotoTo(friend.Id, ReadFile(_file).Result, _file, 1, myText.Text);
-                }
-
-                var dialogSuccess = new MessageDialog("Успешно отправлено!");
-                dialogSuccess.ShowAsync();
-            }
-        }
-        private async void ToMessage(object sender, RoutedEventArgs e)
-        {
-            if (_file == null)
-            {
-                var noFile = new MessageDialog("Картинка не выбрана!");
-                noFile.ShowAsync();
-            }
-            else
-            {
-                await CreateSaveBitmapAsync(border);
-                LoginDialog.IsOpen = false;
-                foreach (var friend in _vk.Friends.Where(friend => friend.Name == LoginDialog.Title.Substring(25)))
-                {
-                    await _vk.PhotoTo(friend.Id, ReadFile(_file).Result, _file, 2, myText.Text);
-                }
-                var dialogSuccess = new MessageDialog("Успешно отправлено!");
-                dialogSuccess.ShowAsync();
+                BackInLogin.Visibility = Visibility.Collapsed;
+                MyFriends.Visibility = Visibility.Visible;
+                LoginDialog.BackButtonVisibility = Visibility.Visible;
+                ComboFriends.Visibility = Visibility.Collapsed;
             }
         }
 
-        private void click_item(object sender, ItemClickEventArgs e)
+        private void lulull(object sender, SelectionChangedEventArgs e)
         {
-            LoginDialog.Title = "Отправка изображения для " + e.ClickedItem;
+            var typeItem = (ComboBoxItem)ComboFriends.SelectedItem;
+            var value = typeItem.Content.ToString();
+            LoginDialog.Title = "Отправка изображения для " + value;
             LoginDialog.IsOpen = true;
         }
-
-        private void ValueChanged_sm(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (FontSlider == null) return;
-            if (smallTextBox.FontSize < FontSliderSmall.Value)
-                smallTextBox.Height += 2;
-            else
-                smallTextBox.Height -= 2;
-            smallTextBox.FontSize = FontSliderSmall.Value;
-            smallTextBox.Text = smallTextBox.Text;
-        }
-        private void ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (FontSlider == null) return;
-            if (bigTextBox.FontSize < FontSlider.Value)
-                bigTextBox.Height += 2;
-            else
-                bigTextBox.Height -= 2;
-            bigTextBox.FontSize = FontSlider.Value;
-            bigTextBox.Text = bigTextBox.Text;
-        }
-
-        private void photo_click(object sender, RoutedEventArgs e)
-        {
-            CameraCapture();
-        }
-        async private void CameraCapture()
-        {
-            //var cameraUi = new CameraCaptureUI();
-            //cameraUi.PhotoSettings.AllowCropping = false;
-            //cameraUi.PhotoSettings.MaxResolution = CameraCaptureUIMaxPhotoResolution.MediumXga;
-
-            //var capturedMedia =
-            //    await cameraUi.CaptureFileAsync(CameraCaptureUIMode.Photo);
-
-            //if (capturedMedia != null)
-            //{
-            //    using (var streamCamera = await capturedMedia.OpenAsync(FileAccessMode.Read))
-            //    {
-            //        var bitmapCamera = new BitmapImage();
-            //        bitmapCamera.SetSource(streamCamera);
-            //        var width = bitmapCamera.PixelWidth;
-            //        var height = bitmapCamera.PixelHeight;
-            //        var wBitmap = new WriteableBitmap(width, height);
-            //        using (var stream = await capturedMedia.OpenAsync(FileAccessMode.Read))
-            //        {
-            //            wBitmap.SetSource(stream);
-            //        }
-            //    }
-            //}
-            //_file = capturedMedia;
-            //SetCanvas();
-        }
-
     }
 }
